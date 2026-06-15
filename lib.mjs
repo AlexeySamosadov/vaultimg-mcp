@@ -40,3 +40,31 @@ export async function imageStripMetadata(input, output) {
   await img.writeAsync(output);
   return `Wrote ${output} with metadata stripped (EXIF was ${had ? "present" : "absent"} in the source).`;
 }
+
+/* ---- Pro tools (require a valid VAULTIMG_LICENSE) ---- */
+
+export async function imageWatermark(input, text, output) {
+  const img = await Jimp.read(input);
+  const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+  const y = Math.max(0, img.getHeight() - 44);
+  img.print(font, 12, y, text);
+  await img.writeAsync(output);
+  return `Watermarked → ${output} ("${text}")`;
+}
+
+export async function imageCrop(input, x, y, width, height, output) {
+  const img = await Jimp.read(input);
+  if (x < 0 || y < 0 || width <= 0 || height <= 0) throw new Error("x,y must be >=0 and width,height >0");
+  if (x + width > img.getWidth() || y + height > img.getHeight())
+    throw new Error(`crop ${width}×${height} at ${x},${y} exceeds image ${img.getWidth()}×${img.getHeight()}`);
+  img.crop(x, y, width, height);
+  await img.writeAsync(output);
+  return `Cropped → ${output} (${img.getWidth()}×${img.getHeight()} px)`;
+}
+
+export async function imageRotate(input, degrees, output) {
+  const img = await Jimp.read(input);
+  img.rotate(degrees);
+  await img.writeAsync(output);
+  return `Rotated ${degrees}° → ${output} (${img.getWidth()}×${img.getHeight()} px)`;
+}

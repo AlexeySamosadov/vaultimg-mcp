@@ -6,11 +6,18 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { imageInfo, imageResize, imageConvert, imageStripMetadata } from "./lib.mjs";
+import { imageInfo, imageResize, imageConvert, imageStripMetadata, imageWatermark, imageCrop, imageRotate } from "./lib.mjs";
+import { licenseStatus, upgradeMessage } from "./license.mjs";
 
-const server = new McpServer({ name: "vaultimg-mcp", version: "0.1.0" });
+const server = new McpServer({ name: "vaultimg-mcp", version: "0.2.0" });
 const text = t => ({ content: [{ type: "text", text: t }] });
 const wrap = fn => async (args) => {
+  try { return text(await fn(args)); }
+  catch (e) { return { isError: true, content: [{ type: "text", text: "Error: " + e.message }] }; }
+};
+const pro = fn => async (args) => {
+  const st = await licenseStatus();
+  if (!st.pro) return text(upgradeMessage(st.reason));
   try { return text(await fn(args)); }
   catch (e) { return { isError: true, content: [{ type: "text", text: "Error: " + e.message }] }; }
 };
@@ -49,5 +56,40 @@ server.registerTool("image_strip_metadata", {
     output: z.string().describe("Absolute path to write the cleaned image")
   }
 }, wrap(({ input, output }) => imageStripMetadata(input, output)));
+
+/* ---- Pro tools (one-time 9 USDC license; see README) ---- */
+
+server.registerTool("image_watermark", {
+  title: "Watermark image (Pro)",
+  description: "Pro: print a text watermark onto a local image.",
+  inputSchema: {
+    input: z.string().describe("Absolute path to the source image"),
+    text: z.string().describe("Watermark text"),
+    output: z.string().describe("Absolute path to write the watermarked image")
+  }
+}, pro(({ input, text, output }) => imageWatermark(input, text, output)));
+
+server.registerTool("image_crop", {
+  title: "Crop image (Pro)",
+  description: "Pro: crop a rectangular region from a local image.",
+  inputSchema: {
+    input: z.string().describe("Absolute path to the source image"),
+    x: z.number().int().min(0).describe("Left offset in pixels"),
+    y: z.number().int().min(0).describe("Top offset in pixels"),
+    width: z.number().int().positive().describe("Crop width in pixels"),
+    height: z.number().int().positive().describe("Crop height in pixels"),
+    output: z.string().describe("Absolute path to write the cropped image")
+  }
+}, pro(({ input, x, y, width, height, output }) => imageCrop(input, x, y, width, height, output)));
+
+server.registerTool("image_rotate", {
+  title: "Rotate image (Pro)",
+  description: "Pro: rotate a local image by any number of degrees.",
+  inputSchema: {
+    input: z.string().describe("Absolute path to the source image"),
+    degrees: z.number().describe("Rotation in degrees (clockwise)"),
+    output: z.string().describe("Absolute path to write the rotated image")
+  }
+}, pro(({ input, degrees, output }) => imageRotate(input, degrees, output)));
 
 await server.connect(new StdioServerTransport());

@@ -34,3 +34,15 @@ Add to `claude_desktop_config.json`:
 Agents increasingly need to handle user images — resizing for upload, converting formats, and especially **stripping EXIF/GPS metadata before anything is shared**. Doing it locally keeps private photos private. No server, no account, no upload.
 
 MIT licensed.
+
+## Pro tools — one-time crypto license, no subscription
+Free tools work forever. Pro tools (`image_watermark`, `image_crop`, `image_rotate`) need a license:
+
+1. Send **9 USDC on Base** to `0xe339997037C7e1C81829fA3e110d3e82B4bDd48E`
+2. [Open an issue](https://github.com/AlexeySamosadov/vaultimg-mcp/issues/new) with your **tx hash** + **email**.
+3. A bot verifies the payment on-chain and replies with your **license key**.
+4. Set it in your MCP config and restart:
+   ```json
+   { "mcpServers": { "vaultimg": { "command": "npx", "args": ["github:AlexeySamosadov/vaultimg-mcp"], "env": { "VAULTIMG_LICENSE": "<your-key>" } } } }
+   ```
+Offline ECDSA-signed token — verified locally, never phoned home.
