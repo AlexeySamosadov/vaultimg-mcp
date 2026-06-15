@@ -1,0 +1,18 @@
+{
+  "name": "vaultimg-mcp",
+  "version": "0.1.0",
+  "description": "MCP server giving AI agents local image tools — resize, convert, strip EXIF metadata, info. Images never leave the machine.",
+  "type": "module",
+  "main": "server.mjs",
+  "bin": { "vaultimg-mcp": "server.mjs" },
+  "files": ["server.mjs", "lib.mjs", "README.md"],
+  "scripts": { "test": "node smoke.mjs" },
+  "keywords": ["mcp", "model-context-protocol", "mcp-server", "image", "resize", "exif", "privacy", "claude", "ai-agent", "ai-tools"],
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "jimp": "0.22.12",
+    "zod": "^4.4.3"
+  }
+}
